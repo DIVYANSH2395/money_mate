@@ -6,7 +6,7 @@ import '../../models/user_model.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_textfield.dart';
 import 'login_screen.dart';
-
+import '../../utils/validators.dart';
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -14,6 +14,14 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
+final _formKey = GlobalKey<FormState>();
+
+final nameController = TextEditingController();
+final emailController = TextEditingController();
+final passwordController = TextEditingController();
+final confirmPasswordController = TextEditingController();
+
+bool isLoading = false;
 class _SignupScreenState extends State<SignupScreen> {
 
   final _formKey = GlobalKey<FormState>();
@@ -28,6 +36,8 @@ class _SignupScreenState extends State<SignupScreen> {
   bool hideConfirmPassword = true;
 
   bool isLoading = false;
+
+  
 
   @override
   void dispose() {
@@ -142,16 +152,10 @@ class _SignupScreenState extends State<SignupScreen> {
             vertical: 20,
           ),
 
-          child: Form(
-
-            key: _formKey,
-
-            child: Column(
-
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-
+          child:Form(
+  key: _formKey,
+  child: Column(
+    children: [
                 const SizedBox(height: 25),
 
                 Center(
@@ -192,30 +196,25 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
 
                 const SizedBox(height: 35),
-
-                const Text(
-                  "Full Name",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
+CustomTextField(
+  controller: nameController,
+  hintText: "Full Name",
+  prefixIcon: Icons.person,
+  validator: Validators.validateName,
+),
                 const SizedBox(height: 10),
 
+              
+
+               
+
                 CustomTextField(
-                  controller: nameController,
-                  hintText: "Enter your name",
-                  prefixIcon: Icons.person_outline,
-                ),
-
-                const SizedBox(height: 20),
-
-                const Text(
-                  "Email",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+  controller: emailController,
+  hintText: "Email",
+  prefixIcon: Icons.email,
+  keyboardType: TextInputType.emailAddress,
+  validator: Validators.validateEmail,
+),
 
                 const SizedBox(height: 10),
 
@@ -227,70 +226,51 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 const SizedBox(height: 20),
 
-                const Text(
-                  "Password",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+             CustomTextField(
+  controller: passwordController,
+  hintText: "Password",
+  prefixIcon: Icons.lock,
+  obscureText: hidePassword,
+  validator: Validators.validatePassword,
+  suffixIcon: IconButton(
+    onPressed: () {
+      setState(() {
+        hidePassword = !hidePassword;
+      });
+    },
+    icon: Icon(
+      hidePassword
+          ? Icons.visibility_off
+          : Icons.visibility,
+    ),
+  ),
+),                                const SizedBox(height: 20),
 
-                const SizedBox(height: 10),
-
-                CustomTextField(
-                  controller: passwordController,
-                  hintText: "Enter password",
-                  prefixIcon: Icons.lock_outline,
-                  obscureText: hidePassword,
-
-                  suffixIcon: IconButton(
-
-                    onPressed: () {
-
-                      setState(() {
-                        hidePassword = !hidePassword;
-                      });
-
-                    },
-
-                    icon: Icon(
-                      hidePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                    ),
-
-                  ),
-
-                ),
-                                const SizedBox(height: 20),
-
-                const Text(
-                  "Confirm Password",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                CustomTextField(
-                  controller: confirmPasswordController,
-                  hintText: "Confirm password",
-                  prefixIcon: Icons.lock_outline,
-                  obscureText: hideConfirmPassword,
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        hideConfirmPassword =
-                            !hideConfirmPassword;
-                      });
-                    },
-                    icon: Icon(
-                      hideConfirmPassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                    ),
-                  ),
-                ),
+              CustomTextField(
+  controller: confirmPasswordController,
+  hintText: "Confirm Password",
+  prefixIcon: Icons.lock_outline,
+  obscureText: hideConfirmPassword,
+  textInputAction: TextInputAction.done,
+  validator: (value) =>
+      Validators.validateConfirmPassword(
+    value,
+    passwordController.text,
+  ),
+  suffixIcon: IconButton(
+    onPressed: () {
+      setState(() {
+        hideConfirmPassword =
+            !hideConfirmPassword;
+      });
+    },
+    icon: Icon(
+      hideConfirmPassword
+          ? Icons.visibility_off
+          : Icons.visibility,
+    ),
+  ),
+),
 
                 const SizedBox(height: 35),
 
@@ -300,12 +280,18 @@ class _SignupScreenState extends State<SignupScreen> {
                       ? const Center(
                           child: CircularProgressIndicator(),
                         )
-                      : CustomButton(
-                          text: "Create Account",
-                          onPressed: signUp,
-                          height: 60,
-                          borderRadius: 18,
-                        ),
+                      :CustomButton(
+  text: "Create Account",
+  onPressed: () {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    signUp();
+  },
+  height: 60,
+  borderRadius: 18,
+),
                 ),
 
                 const SizedBox(height: 30),
