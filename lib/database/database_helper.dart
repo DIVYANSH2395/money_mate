@@ -166,7 +166,21 @@ Future<UserModel?> loginUser(
 
   return null;
 }
+Future<int> updatePassword(
+  String email,
+  String newPassword,
+) async {
+  final db = await database;
 
+  return await db.update(
+    "users",
+    {
+      "password": newPassword,
+    },
+    where: "email = ?",
+    whereArgs: [email],
+  );
+}
 // =========================
 // Get User By Email
 // =========================
@@ -196,3 +210,4 @@ Future<UserModel?> getUserByEmail(String email) async {
     db.close();
   }
 }
+
