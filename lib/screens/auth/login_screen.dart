@@ -8,24 +8,27 @@ import '../../widgets/custom_button.dart';
 import '../../widgets/custom_textfield.dart';
 import '../home/home_screen.dart';
 import 'signup_screen.dart';
+import '../../utils/validators.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
+
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 final TextEditingController emailController = TextEditingController();
 final TextEditingController passwordController = TextEditingController();
 
 bool isPasswordHidden = true;
 bool isLoading = false;
-
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-
   bool isPasswordHidden = true;
+final _formKey = GlobalKey<FormState>();
 
+bool isLoading = false;
   @override
   void dispose() {
     emailController.dispose();
@@ -34,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 Future<void> login() async {
 
-  if (emailController.text.trim().isEmpty) {
+ {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Please enter email"),
@@ -43,7 +46,7 @@ Future<void> login() async {
     return;
   }
 
-  if (passwordController.text.trim().isEmpty) {
+   {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Please enter password"),
@@ -100,8 +103,10 @@ Future<void> login() async {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+child: Form(
+  key: _formKey,
+  child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
 
@@ -152,11 +157,13 @@ Future<void> login() async {
 
               const SizedBox(height: 10),
 
-              CustomTextField(
-                hintText: "Enter your email",
-                prefixIcon: Icons.email_outlined,
-                controller: emailController,
-              ),
+             CustomTextField(
+  hintText: "Enter your email",
+  prefixIcon: Icons.email_outlined,
+  controller: emailController,
+  keyboardType: TextInputType.emailAddress,
+  validator: Validators.validateEmail,
+),
 
               const SizedBox(height: 20),
 
@@ -169,8 +176,10 @@ Future<void> login() async {
 
               const SizedBox(height: 10),
 
-              CustomTextField(
-                hintText: "Enter your password",
+CustomTextField(
+  validator: Validators.validatePassword,
+  textInputAction: TextInputAction.done,
+                  hintText: "Enter your password",
                 prefixIcon: Icons.lock_outline,
                 controller: passwordController,
                 obscureText: isPasswordHidden,
@@ -208,6 +217,9 @@ Future<void> login() async {
         child: CircularProgressIndicator(),
       )
     : CustomButton(
+      if (!_formKey.currentState!.validate()) {
+  return;
+}
         text: "Login",
         onPressed: login,
         height: 60,
