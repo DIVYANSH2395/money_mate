@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../database/database_helper.dart';
 import '../../models/transaction_model.dart';
@@ -10,7 +11,7 @@ class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
 
   @override
- State<AddTransactionScreen> createState() =>
+  State<AddTransactionScreen> createState() =>
       _AddTransactionScreenState();
 }
 
@@ -56,19 +57,41 @@ class _AddTransactionScreenState
 
   Future<void> saveTransaction() async {
 
-    if (titleController.text.isEmpty ||
-        amountController.text.isEmpty) {
+    if (titleController.text.trim().isEmpty ||
+        amountController.text.trim().isEmpty) {
+      return;
+    }
+
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    final String userEmail =
+        prefs.getString("userEmail") ?? "";
+
+    if (userEmail.isEmpty) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Please login again.",
+          ),
+        ),
+      );
       return;
     }
 
     final transaction = TransactionModel(
-      title: titleController.text,
-      amount: double.parse(amountController.text),
+      title: titleController.text.trim(),
+      amount: double.parse(
+        amountController.text.trim(),
+      ),
       type: selectedType.toLowerCase(),
       category: selectedCategory,
       date: DateFormat(
         "dd MMM yyyy",
       ).format(selectedDate),
+      userEmail: userEmail,
     );
 
     await DatabaseHelper.instance
@@ -78,7 +101,9 @@ class _AddTransactionScreenState
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Transaction Added Successfully"),
+        content: Text(
+          "Transaction Added Successfully",
+        ),
       ),
     );
 
@@ -150,7 +175,7 @@ class _AddTransactionScreenState
                       BorderRadius.circular(15),
                 ),
               ),
-              items: const [
+                            items: const [
                 DropdownMenuItem(
                   value: "Income",
                   child: Text("Income"),
@@ -171,19 +196,23 @@ class _AddTransactionScreenState
 
             ListTile(
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(15),
                 side: const BorderSide(
                   color: Colors.grey,
                 ),
               ),
-              leading: const Icon(Icons.calendar_today),
+              leading: const Icon(
+                Icons.calendar_today,
+              ),
               title: Text(
-                DateFormat("dd MMM yyyy")
-                    .format(selectedDate),
+                DateFormat(
+                  "dd MMM yyyy",
+                ).format(selectedDate),
               ),
               trailing: IconButton(
-                icon: const Icon(Icons.edit_calendar),
+                icon: const Icon(
+                  Icons.edit_calendar,
+                ),
                 onPressed: pickDate,
               ),
             ),
@@ -198,5 +227,12 @@ class _AddTransactionScreenState
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    amountController.dispose();
+    super.dispose();
   }
 }

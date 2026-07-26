@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/home/home_screen.dart';
+import 'package:money_mate/screens/splash/splash_screen.dart';
+
 
 class MoneyMateApp extends StatelessWidget {
   const MoneyMateApp({super.key});
@@ -9,7 +10,7 @@ class MoneyMateApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "MoneyMate",
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

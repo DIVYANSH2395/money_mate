@@ -2,9 +2,12 @@ class TransactionModel {
   final int? id;
   final String title;
   final double amount;
-  final String type; // income / expense
+  final String type;
   final String category;
   final String date;
+
+  // NEW
+  final String userEmail;
 
   TransactionModel({
     this.id,
@@ -13,9 +16,9 @@ class TransactionModel {
     required this.type,
     required this.category,
     required this.date,
+    required this.userEmail,
   });
 
-  // Convert Object to Map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -24,18 +27,21 @@ class TransactionModel {
       'type': type,
       'category': category,
       'date': date,
+      'userEmail': userEmail,
     };
   }
 
-  // Convert Map to Object
-  factory TransactionModel.fromMap(Map<String, dynamic> map) {
+  factory TransactionModel.fromMap(
+    Map<String, dynamic> map,
+  ) {
     return TransactionModel(
       id: map['id'],
       title: map['title'],
-      amount: map['amount'].toDouble(),
+      amount: (map['amount'] as num).toDouble(),
       type: map['type'],
       category: map['category'],
       date: map['date'],
+      userEmail: map['userEmail'] ?? "",
     );
   }
 }
