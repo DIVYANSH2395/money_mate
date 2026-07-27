@@ -44,8 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadTransactions() async {
-    transactions = await DatabaseHelper.instance.getTransactions();
-
+    transactions = await DatabaseHelper.instance.getTransactions(userEmail);
     totalIncome = 0;
     totalExpense = 0;
 

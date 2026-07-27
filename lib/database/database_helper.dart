@@ -23,11 +23,12 @@ class DatabaseHelper {
 
     final path = join(dbPath, filePath);
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+   return await openDatabase(
+  path,
+  version: 2,
+  onCreate: _createDB,
+  onUpgrade: _onUpgrade,
+);
   }
 
   Future _createDB(Database db, int version) async {
@@ -35,13 +36,14 @@ class DatabaseHelper {
   // Transactions Table
   await db.execute('''
     CREATE TABLE transactions(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      amount REAL NOT NULL,
-      type TEXT NOT NULL,
-      category TEXT NOT NULL,
-      date TEXT NOT NULL
-    )
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  amount REAL NOT NULL,
+  type TEXT NOT NULL,
+  category TEXT NOT NULL,
+  date TEXT NOT NULL,
+  userEmail TEXT NOT NULL
+)
   ''');
 
   // Users Table
@@ -54,6 +56,18 @@ class DatabaseHelper {
     )
   ''');
 
+}
+
+Future<void> _onUpgrade(
+  Database db,
+  int oldVersion,
+  int newVersion,
+) async {
+  if (oldVersion < 2) {
+    await db.execute(
+      "ALTER TABLE transactions ADD COLUMN userEmail TEXT NOT NULL DEFAULT ''",
+    );
+  }
 }
 
   // =========================
@@ -73,19 +87,22 @@ class DatabaseHelper {
   // Get All Transactions
   // =========================
 
-  Future<List<TransactionModel>> getTransactions() async {
-    final db = await instance.database;
+  Future<List<TransactionModel>> getTransactions(
+  String userEmail,
+) async {
+  final db = await instance.database;
 
-    final result = await db.query(
-      'transactions',
-      orderBy: 'id DESC',
-    );
+  final result = await db.query(
+    'transactions',
+    where: 'userEmail = ?',
+    whereArgs: [userEmail],
+    orderBy: 'id DESC',
+  );
 
-    return result
-        .map((json) => TransactionModel.fromMap(json))
-        .toList();
-  }
-
+  return result
+      .map((json) => TransactionModel.fromMap(json))
+      .toList();
+}
   // =========================
   // Update Transaction
   // =========================
