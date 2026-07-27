@@ -5,9 +5,9 @@ class TransactionModel {
   final String type;
   final String category;
   final String date;
-
-  // NEW
   final String userEmail;
+
+
 
   TransactionModel({
     this.id,

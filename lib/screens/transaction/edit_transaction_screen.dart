@@ -88,15 +88,14 @@ class _EditTransactionScreenState
     }
 
     final transaction = TransactionModel(
-      id: widget.transaction.id,
-      title: titleController.text,
-      amount: double.parse(amountController.text),
-      type: selectedType.toLowerCase(),
-      category: selectedCategory,
-      date: DateFormat(
-        "dd MMM yyyy",
-      ).format(selectedDate),
-    );
+  id: widget.transaction.id,
+  title: titleController.text.trim(),
+  amount: double.parse(amountController.text.trim()),
+  type: selectedType.toLowerCase(),
+  category: selectedCategory,
+  date: DateFormat("dd MMM yyyy").format(selectedDate),
+  userEmail: widget.transaction.userEmail,
+);
 
     await DatabaseHelper.instance
         .updateTransaction(transaction);
