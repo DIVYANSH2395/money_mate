@@ -16,6 +16,7 @@ import '../../widgets/transaction_card.dart';
 import '../../widgets/weekly_bar_chart.dart';
 
 import '../auth/login_screen.dart';
+import '../profile/profile_screen.dart';
 import '../reports/report_screen.dart';
 import '../settings/budget_screen.dart';
 import '../transaction/add_transaction_screen.dart';
@@ -69,11 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
     filteredTransactions =
         List.from(transactions);
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> loadTransactions() async {
-
     transactions =
         await DatabaseHelper.instance
             .getTransactions(userEmail);
@@ -81,12 +83,11 @@ class _HomeScreenState extends State<HomeScreen> {
     totalIncome = 0;
     totalExpense = 0;
 
-    for (var t in transactions) {
-
-      if (t.type == "income") {
-        totalIncome += t.amount;
+    for (var transaction in transactions) {
+      if (transaction.type == "income") {
+        totalIncome += transaction.amount;
       } else {
-        totalExpense += t.amount;
+        totalExpense += transaction.amount;
       }
     }
 
@@ -102,13 +103,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (monthlyBudget > 0 &&
         totalExpense > monthlyBudget) {
-
       WidgetsBinding.instance
           .addPostFrameCallback((_) {
-
         ScaffoldMessenger.of(context)
             .showSnackBar(
-
           SnackBar(
             backgroundColor: Colors.red,
             content: Text(
@@ -121,19 +119,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void applyFilters() {
-
     setState(() {
-
       filteredTransactions =
           transactions.where((transaction) {
-
-        final matchesSearch =
-            transaction.title
-                .toLowerCase()
-                .contains(
-                  searchController.text
-                      .toLowerCase(),
-                );
+        final matchesSearch = transaction.title
+            .toLowerCase()
+            .contains(
+              searchController.text
+                  .toLowerCase(),
+            );
 
         final matchesFilter =
             selectedFilter == "All"
@@ -145,16 +139,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return matchesSearch &&
             matchesFilter;
-
       }).toList();
     });
   }
 
   IconData getCategoryIcon(
       String category) {
-
     switch (category) {
-
       case "Food":
         return Icons.fastfood;
 
@@ -183,9 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Color getCategoryColor(
       String category) {
-
     switch (category) {
-
       case "Food":
         return Colors.orange;
 
@@ -211,351 +200,422 @@ class _HomeScreenState extends State<HomeScreen> {
         return Colors.grey;
     }
   }
-  @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: const Color(0xffF8FAFC),
+    @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xffF8FAFC),
 
-    bottomNavigationBar: BottomNavBar(
-      currentIndex: selectedIndex,
-      onTap: (index) {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
-    ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: selectedIndex,
+        onTap: (index) async {
+          setState(() {
+            selectedIndex = index;
+          });
 
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      automaticallyImplyLeading: false,
+          switch (index) {
+            case 0:
+              break;
 
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Good Morning 👋",
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 15,
-            ),
-          ),
+            case 1:
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ReportScreen(
+                    income: totalIncome,
+                    expense: totalExpense,
+                    balance: totalBalance,
+                    transactions: transactions,
+                  ),
+                ),
+              );
 
-          const SizedBox(height: 4),
+              if (mounted) {
+                setState(() {
+                  selectedIndex = 0;
+                });
+              }
+              break;
 
-          Text(
-            userName.isEmpty ? "User" : userName,
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-            ),
-          ),
-        ],
+            case 2:
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const BudgetScreen(),
+                ),
+              );
+
+              await loadTransactions();
+
+              if (mounted) {
+                setState(() {
+                  selectedIndex = 0;
+                });
+              }
+              break;
+
+            case 3:
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
+              );
+
+              if (mounted) {
+                setState(() {
+                  selectedIndex = 0;
+                });
+              }
+              break;
+          }
+        },
       ),
 
-      actions: [
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
 
-        IconButton(
-          icon: const Icon(Icons.bar_chart),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ReportScreen(
-                  income: totalIncome,
-                  expense: totalExpense,
-                  balance: totalBalance,
-                  transactions: transactions,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Good Morning 👋",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 15,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              userName.isEmpty ? "User" : userName,
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
+            ),
+          ],
+        ),
+
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ReportScreen(
+                    income: totalIncome,
+                    expense: totalExpense,
+                    balance: totalBalance,
+                    transactions: transactions,
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
-
-        IconButton(
-          icon: const Icon(
-            Icons.account_balance_wallet,
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    const BudgetScreen(),
-              ),
-            );
-          },
-        ),
-
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () async {
-
-            final prefs =
-                await SharedPreferences.getInstance();
-
-            await prefs.clear();
-
-            if (!mounted) return;
-
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    const LoginScreen(),
-              ),
-              (route) => false,
-            );
-          },
-        ),
-      ],
-    ),
-
-    floatingActionButton: FloatingActionButton(
-      backgroundColor: AppColors.primary,
-      child: const Icon(Icons.add),
-      onPressed: () async {
-
-        final result =
-            await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const AddTransactionScreen(),
-          ),
-        );
-
-        if (result == true) {
-          loadTransactions();
-        }
-      },
-    ),
-
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
-        children: [
-
-          BalanceCard(
-            balance: totalBalance,
-          ),
-
-          const SizedBox(height: 25),
-
-          ExpensePieChart(
-            income: totalIncome,
-            expense: totalExpense,
-          ),
-
-          BudgetProgressCard(
-            budget: monthlyBudget,
-            expense: totalExpense,
-          ),
-
-          const SizedBox(height: 25),
-
-          const WeeklyBarChart(),
-
-          const SizedBox(height: 25),
-
-          Row(
-            children: [
-
-              SummaryCard(
-                title: "Income",
-                amount:
-                    "₹${totalIncome.toStringAsFixed(0)}",
-                icon: Icons.arrow_downward,
-                color: Colors.green,
-              ),
-
-              const SizedBox(width: 15),
-
-              SummaryCard(
-                title: "Expense",
-                amount:
-                    "₹${totalExpense.toStringAsFixed(0)}",
-                icon: Icons.arrow_upward,
-                color: Colors.red,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 30),
-                    SearchBox(
-            controller: searchController,
-            onChanged: (value) {
-              applyFilters();
+              );
             },
           ),
 
-          const SizedBox(height: 15),
+          IconButton(
+            icon: const Icon(
+              Icons.account_balance_wallet,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const BudgetScreen(),
+                ),
+              );
+            },
+          ),
 
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final prefs =
+                  await SharedPreferences.getInstance();
+
+              await prefs.clear();
+
+              if (!mounted) return;
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const LoginScreen(),
+                ),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add),
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const AddTransactionScreen(),
+            ),
+          );
+
+          if (result == true) {
+            await loadTransactions();
+          }
+        },
+      ),
+            body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+
+            BalanceCard(
+              balance: totalBalance,
+            ),
+
+            const SizedBox(height: 25),
+
+            ExpensePieChart(
+              income: totalIncome,
+              expense: totalExpense,
+            ),
+
+            const SizedBox(height: 20),
+
+            BudgetProgressCard(
+              budget: monthlyBudget,
+              expense: totalExpense,
+            ),
+
+            const SizedBox(height: 25),
+
+            const WeeklyBarChart(),
+
+            const SizedBox(height: 25),
+
+            Row(
               children: [
-                FilterChip(
-                  label: const Text("All"),
-                  selected: selectedFilter == "All",
-                  onSelected: (_) {
-                    setState(() {
-                      selectedFilter = "All";
-                      applyFilters();
-                    });
-                  },
+                SummaryCard(
+                  title: "Income",
+                  amount:
+                      "₹${totalIncome.toStringAsFixed(0)}",
+                  icon: Icons.arrow_downward,
+                  color: Colors.green,
                 ),
 
-                const SizedBox(width: 10),
+                const SizedBox(width: 15),
 
-                FilterChip(
-                  label: const Text("Income"),
-                  selected: selectedFilter == "Income",
-                  onSelected: (_) {
-                    setState(() {
-                      selectedFilter = "Income";
-                      applyFilters();
-                    });
-                  },
-                ),
-
-                const SizedBox(width: 10),
-
-                FilterChip(
-                  label: const Text("Expense"),
-                  selected: selectedFilter == "Expense",
-                  onSelected: (_) {
-                    setState(() {
-                      selectedFilter = "Expense";
-                      applyFilters();
-                    });
-                  },
+                SummaryCard(
+                  title: "Expense",
+                  amount:
+                      "₹${totalExpense.toStringAsFixed(0)}",
+                  icon: Icons.arrow_upward,
+                  color: Colors.red,
                 ),
               ],
             ),
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-          const Text(
-            "Recent Transactions",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
+            SearchBox(
+              controller: searchController,
+              onChanged: (value) {
+                applyFilters();
+              },
             ),
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
-          filteredTransactions.isEmpty
-              ? EmptyTransaction(
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            const AddTransactionScreen(),
-                      ),
-                    );
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
 
-                    if (result == true) {
-                      loadTransactions();
-                    }
-                  },
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics:
-                      const NeverScrollableScrollPhysics(),
-                  itemCount: filteredTransactions.length,
-                  itemBuilder: (context, index) {
-                    final transaction =
-                        filteredTransactions[index];
+                  FilterChip(
+                    label: const Text("All"),
+                    selected:
+                        selectedFilter == "All",
+                    onSelected: (_) {
+                      setState(() {
+                        selectedFilter = "All";
+                        applyFilters();
+                      });
+                    },
+                  ),
 
-                    return Dismissible(
-                      key: Key(
-                        transaction.id.toString(),
-                      ),
+                  const SizedBox(width: 10),
 
-                      background: Container(
-                        alignment:
-                            Alignment.centerRight,
-                        padding:
-                            const EdgeInsets.only(
-                                right: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius:
-                              BorderRadius.circular(18),
+                  FilterChip(
+                    label: const Text("Income"),
+                    selected:
+                        selectedFilter == "Income",
+                    onSelected: (_) {
+                      setState(() {
+                        selectedFilter =
+                            "Income";
+                        applyFilters();
+                      });
+                    },
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  FilterChip(
+                    label: const Text("Expense"),
+                    selected:
+                        selectedFilter ==
+                            "Expense",
+                    onSelected: (_) {
+                      setState(() {
+                        selectedFilter =
+                            "Expense";
+                        applyFilters();
+                      });
+                    },
+                  ),
+
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            const Text(
+              "Recent Transactions",
+              style: TextStyle(
+                fontWeight:
+                    FontWeight.bold,
+                fontSize: 22,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+                        filteredTransactions.isEmpty
+                ? EmptyTransaction(
+                    onPressed: () async {
+                      final result =
+                          await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const AddTransactionScreen(),
                         ),
-                        child: const Icon(
-                          Icons.delete,
-                          color: Colors.white,
+                      );
+
+                      if (result == true) {
+                        await loadTransactions();
+                      }
+                    },
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics:
+                        const NeverScrollableScrollPhysics(),
+                    itemCount:
+                        filteredTransactions.length,
+                    itemBuilder: (context, index) {
+                      final transaction =
+                          filteredTransactions[index];
+
+                      return Dismissible(
+                        key: Key(
+                          transaction.id.toString(),
                         ),
-                      ),
 
-                      onDismissed: (direction) async {
-                        await DatabaseHelper.instance
-                            .deleteTransaction(
-                                transaction.id!);
-
-                        loadTransactions();
-
-                        if (!mounted) return;
-
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Transaction Deleted",
-                            ),
+                        background: Container(
+                          alignment:
+                              Alignment.centerRight,
+                          padding:
+                              const EdgeInsets.only(
+                            right: 20,
                           ),
-                        );
-                      },
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius:
+                                BorderRadius.circular(
+                                    18),
+                          ),
+                          child: const Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
 
-                      child: GestureDetector(
-                        onTap: () async {
-                          final result =
-                              await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  EditTransactionScreen(
-                                transaction:
-                                    transaction,
+                        onDismissed:
+                            (direction) async {
+                          await DatabaseHelper.instance
+                              .deleteTransaction(
+                                  transaction.id!);
+
+                          await loadTransactions();
+
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(
+                                  context)
+                              .showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Transaction Deleted",
                               ),
                             ),
                           );
-
-                          if (result == true) {
-                            loadTransactions();
-                          }
                         },
 
-                        child: TransactionCard(
-                          icon: getCategoryIcon(
-                              transaction.category),
-                          title: transaction.title,
-                          date: transaction.date,
-                          amount:
-                              "${transaction.type == "income" ? "+" : "-"} ₹${transaction.amount}",
-                          color: getCategoryColor(
-                              transaction.category),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                        child: GestureDetector(
+                          onTap: () async {
+                            final result =
+                                await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    EditTransactionScreen(
+                                  transaction:
+                                      transaction,
+                                ),
+                              ),
+                            );
 
-          const SizedBox(height: 100),
-        ],
+                            if (result == true) {
+                              await loadTransactions();
+                            }
+                          },
+
+                          child: TransactionCard(
+                            icon: getCategoryIcon(
+                              transaction.category,
+                            ),
+                            title:
+                                transaction.title,
+                            date:
+                                transaction.date,
+                            amount:
+                                "${transaction.type == "income" ? "+" : "-"} ₹${transaction.amount}",
+                            color:
+                                getCategoryColor(
+                              transaction.category,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+            const SizedBox(height: 100),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
