@@ -220,11 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ReportScreen(
-                    income: totalIncome,
-                    expense: totalExpense,
-                    balance: totalBalance,
-                    transactions: transactions,
+builder: (_) => const ReportScreen(
+                     
                   ),
                 ),
               );
@@ -307,11 +304,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ReportScreen(
-                    income: totalIncome,
-                    expense: totalExpense,
-                    balance: totalBalance,
-                    transactions: transactions,
+builder: (_) => const ReportScreen(
+                     
                   ),
                 ),
               );
