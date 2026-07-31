@@ -32,6 +32,7 @@ for (var transaction in transactions) {
     );
   }
 }
+
     return Scaffold(
       appBar: AppBar(
         actions: [
